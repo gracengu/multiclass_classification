@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# virtualenv
+python3.7*
+
+# others
+example/
+support/
+
 # C extensions
 *.so
 

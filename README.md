@@ -1,1 +1,1 @@
-# multinomial_classification
+# multiclass_classification

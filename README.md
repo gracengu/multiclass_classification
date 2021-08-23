@@ -111,7 +111,7 @@ pip install -r requirements.txt
 1. You will have to install a new IPython kernelspec to run the jupyter notebook in an isolated environment.
     
 ```bash
-ipykernel install --name python3.7_multiclass --user
+ipython kernel install --name python3.7_multiclass --user
 ```
 
 You can change the `--name` to anything you want.

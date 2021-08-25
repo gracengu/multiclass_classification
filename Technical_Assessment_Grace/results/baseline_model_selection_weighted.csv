@@ -1,7 +1,0 @@
-Technique,Phase,Model Name,Averaging Technique,Oversampling,precision,recall,f1-score,support
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,Logistic Regression,weighted avg,No,0.9604429347321171,0.9766754270696452,0.9660130522362222,3044.0
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,Weighted Logistic Regression,weighted avg,No,0.9673915031278106,0.6534165571616294,0.7731701940881591,3044.0
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,Random Forest,weighted avg,No,0.97112228884383,0.9835742444152431,0.976425789497944,3044.0
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,Light GBM,weighted avg,No,0.996315221596773,0.9963863337713534,0.9961742540939069,3044.0
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,Linear SVC,weighted avg,No,0.9785703604068319,0.9806176084099869,0.9749167582225283,3044.0
-"No Outlier Removal, Feature Engineering and Transformation",Baseline Model Selection,RBF SVC,weighted avg,No,0.9791658547862176,0.9842312746386334,0.9776083660377544,3044.0

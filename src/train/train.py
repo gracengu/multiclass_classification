@@ -1,9 +1,14 @@
+# Model 
+# Weighted logistic regression, random forest, lightgbm, neural net, one-class svm, pca-based anomaly detection
+# Confusion matrix, precision-recall curve
+# SMOTE Oversampling, Train and Test Split
+# Have not complete
+# Hyperparameter tuning, cross validation
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import random
-import pickle
 
 import missingno as msno
 from sklearn.experimental import enable_iterative_imputer
@@ -123,17 +128,19 @@ class Train(Config):
         combined_df3.to_csv("./data/combined_dataset3.csv", index=False)
         combined_df4.to_csv("./data/combined_dataset4.csv", index=False)
 
+    def traintest_split(self, data, test_size=0.3):
 
-    def feature_selection(self, X_train, y_train, fname, retrain=False, num_cols="all", threshold=.5):
+        X, y = data.iloc[:,:-1], data.iloc[:,-1]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=test_size)
 
-        random.seed(123)
+        return X_train, X_test, y_train, y_test
+
+
+    def feature_selection(self, X_train, y_train, num_cols="all", threshold=.5):
+
         # Numerical input Categorical Output: ANOVA 
         X_anova = X_train.select_dtypes(["float", "int"])
-        filename = "./models/models_new/anova_{}".format(fname)
-        if retrain:
-            fs = SelectKBest(score_func=f_classif, k=num_cols).fit(X_anova, y_train)
-            pickle.dump(fs, open(filename, 'wb'))
-        fs = pickle.load(open(filename, 'rb'))
+        fs = SelectKBest(score_func=f_classif, k=num_cols).fit(X_anova, y_train)
         X_selected = fs.transform(X_anova)
         anova_df = pd.DataFrame({"features_selected" : list(X_anova.loc[:, fs.get_support()].columns),
                                 "features_pvalues": list(fs.pvalues_[fs.get_support()])})
@@ -143,11 +150,7 @@ class Train(Config):
 
         # Numerical input Categorical Output: Chi2 
         X_chi2 = X_train.select_dtypes(["category"])
-        filename = "./models/models_new/chi2_{}".format(fname)
-        if retrain:
-            fs = SelectKBest(score_func=chi2, k=num_cols).fit(X_chi2, y_train)
-            pickle.dump(fs, open(filename, 'wb'))
-        fs = pickle.load(open(filename, 'rb'))
+        fs = SelectKBest(score_func=chi2, k=num_cols).fit(X_chi2, y_train)
         X_selected = fs.transform(X_chi2)
         chi2_df = pd.DataFrame({"features_selected" : list(X_chi2.loc[:, fs.get_support()].columns),
                                 "features_pvalues": list(fs.pvalues_[fs.get_support()])})
@@ -158,7 +161,7 @@ class Train(Config):
 
     def feature_importance(self, data, title, fontsize=20):
     
-        fig = plt.figure(figsize=(20,50))
+        fig = plt.figure(figsize=(15,10))
         plt.barh(data["features_selected"], data["features_pvalues"])
         plt.title(title, fontsize=fontsize)
         plt.xlabel("features_pvalues", fontsize=fontsize)
@@ -166,13 +169,13 @@ class Train(Config):
 
         return fig
 
-    def oversampling(self, X_train, y_train, plot=False):
-    
-        oversample = SMOTE(random_state=123)
-        X_otrain,y_otrain = oversample.fit_resample(X_train,y_train)
+    def oversampling(self, Xtrain, y_train, plot=False):
+
+        oversample = SMOTE()
+        X_otrain, y_otrain = oversample.fit_resample(X_train,y_train)
         if plot:
             display(y_otrain.value_counts(normalize=True).plot.pie())
-            
+
         return X_otrain, y_otrain
 
     def print_confusion_matrix(self, confusion_matrix, axes, class_label, class_names, fontsize=14):
@@ -256,13 +259,6 @@ class Train(Config):
         
         fig.tight_layout()
         return fig
-
-    def traintest_split(self, data, test_size=0.3):
-
-        X, y = data.loc[:,~data.columns.isin(["target"])], data.loc[:,data.columns.isin(["target"])]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=test_size)
-
-        return X_train, X_test, y_train, y_test
         
     def class_count(self, y_test, y_pred):
 
@@ -272,265 +268,6 @@ class Train(Config):
         final = pd.concat([true, pred], axis=1).rename(columns={0:"pred"})
         
         return final
-
-    def plot_graphs(self, X_test, y_test, y_pred, model, fontsize=16):
-
-        algo_name = type(model).__name__
-        y_proba = model.predict_proba(X_test)
-        n_classes = len(y_test["target"].unique())
-        onehotencoder = OneHotEncoder()
-        y_enc = onehotencoder.fit_transform(np.array(y_test).reshape(-1,1)).toarray()
-        
-        fig, (ax1, ax2, ax3)  = plt.subplots(1, 3, figsize=(12, 5))
-        plt.style.use('default')
-        fpr = dict()
-        tpr = dict()
-        roc_auc = dict()
-        for i in range(n_classes):
-            fpr[i], tpr[i], _ = roc_curve(y_enc[:, i], y_proba[:, i])
-            roc_auc[i] = auc(fpr[i], tpr[i])
-            ax1.plot(fpr[i], tpr[i], lw=2, label='ROC curve of class {0} (area = {1:0.2f})'.format(i, roc_auc[i]))
-        ax1.set_xlim([0.0, 1.0])
-        ax1.set_ylim([0.0, 1.05])
-        ax1.set_xlabel("false positive rate")
-        ax1.set_ylabel("true positive rate")
-        ax1.legend(loc="lower right", prop={'size': 10})
-        ax1.set_title('ROC to multi-class')
-        fig.suptitle(algo_name, fontsize=16)
-        
-        plt.style.use('default')
-        precision = dict()
-        recall = dict()
-        for i in range(n_classes):
-            precision[i], recall[i], _ = precision_recall_curve(y_enc[:, i], y_proba[:, i])
-            ax2.plot(recall[i], precision[i], lw=2, label='PR Curve of class {}'.format(i))
-        
-        ax2.set_xlim([0.0, 1.0])
-        ax2.set_ylim([0.0, 1.05])
-        ax2.set_xlabel("recall")
-        ax2.set_ylabel("precision")
-        ax2.legend(loc="lower right", prop={'size': 10})
-        ax2.set_title('Precision-Recall to multi-class')
-        fig.suptitle(algo_name, fontsize=16)
-        
-        labels = ["".join("c" + str(i[0])) for i in pd.DataFrame(y_test).value_counts().index]
-        df_cm = pd.DataFrame(confusion_matrix(y_test, y_pred), index=labels, columns=labels)
-        heatmap = sns.heatmap(df_cm, annot=True, fmt="d", cbar=False, ax=ax3)
-        heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
-        heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right', fontsize=fontsize)
-        heatmap.set_ylabel('True label')
-        heatmap.set_xlabel('Predicted label')
-        heatmap.set_title("Confusion Matrix for Binary Label" )
-        plt.suptitle(algo_name, fontsize=16)
-        
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-        display(fig)
-
-    def data_prep(self, data, fname, retrain=False, test_size=0.3):
-
-        X_train, X_test, y_train, y_test = self.traintest_split(data, test_size=test_size)
-        ANOVA_fs, chi2_fs = self.feature_selection(X_train, y_train, fname, retrain=retrain, num_cols="all")
-        feature_list = list(ANOVA_fs["features_selected"].values) + list(chi2_fs["features_selected"].values) + ["target"]
-        temp = data.loc[:, data.columns.isin(feature_list)]
-        cols = ["12", "64", "95"] 
-        temp[cols] = temp[cols].astype("int64")
-        X_train, X_test, y_train, y_test = self.traintest_split(data, test_size=test_size)
-        X_otrain, y_otrain = self.oversampling(X_train, y_train, plot=True)
-
-        return X_train, X_test, y_train, y_test, X_otrain, y_otrain
-
-    def baseline_model(self, data, retrain=False):
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs1.sav', retrain=retrain)
-
-        # Logistic Regression
-        filename = './models/models_new/logreg_baseline_dataset1.sav'
-        if retrain:
-            lr_dataset1 = LogisticRegression(random_state=123)
-            lr_dataset1.fit(X_train, y_train)
-            pickle.dump(lr_dataset1, open(filename, 'wb'))
-        lr_dataset1 = pickle.load(open(filename, 'rb'))
-        y_pred = lr_dataset1.predict(X_test)
-        print("Evaluation metrics for Logistic Regression:")
-        report_logreg = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_logreg)
-        self.plot_graphs(X_test, y_test, y_pred, lr_dataset1)
-
-        # Weighted Logistic Regression
-        filename = './models/models_new/weightedlogreg_baseline_dataset1.sav'
-        if retrain:
-            lr_dataset2 = LogisticRegression(class_weight='balanced', random_state=123)
-            lr_dataset2.fit(X_train, y_train)
-            pickle.dump(lr_dataset2, open(filename, 'wb'))
-        lr_dataset2 = pickle.load(open(filename, 'rb'))
-        y_pred = lr_dataset2.predict(X_test)
-        print("Evaluation metrics for Weighted Logistic Regression:")
-        report_weightlogreg = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_weightlogreg)
-        self.plot_graphs(X_test, y_test, y_pred, lr_dataset2)
-
-        # Random Forest Classifier
-        filename = './models/models_new/rf_baseline_dataset1.sav'
-        if retrain:
-            rf_model = RandomForestClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(rf_model, open(filename, 'wb'))
-        rf_model = pickle.load(open(filename, 'rb'))
-        y_pred = rf_model.predict(X_test)
-        print("Evaluation metrics for Random Forest Classifier:")
-        report_rf = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_rf)
-        self.plot_graphs(X_test, y_test, y_pred, rf_model)
-
-        # LightGBM
-        filename = './models/models_new/lgbm_baseline_dataset0.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for Light Gradient Boosting Classifier:")
-        report_lgbm = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_lgbm)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        # Linear SVC
-        filename = './models/models_new/svc_baseline_dataset1.sav'
-        if retrain:
-            svm_model = SVC(kernel='linear',probability=True, random_state=123).fit(X_train, y_train)
-            pickle.dump(svm_model, open(filename, 'wb'))
-        svm_model = pickle.load(open(filename, 'rb'))
-        y_pred = svm_model.predict(X_test)
-        print("Evaluation metrics for Linear Support Vector Classifier:")
-        report_svc = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_svc)
-        self.plot_graphs(X_test, y_test, y_pred, svm_model)
-
-        # RBF SVC
-        filename = './models/models_new/svk_baseline_dataset1.sav'
-        if retrain:
-            svm_kernel = SVC(kernel='rbf',probability=True, random_state=123).fit(X_train, y_train)
-            pickle.dump(svm_kernel, open(filename, 'wb'))
-        svm_kernel = pickle.load(open(filename, 'rb'))
-        y_pred = svm_model.predict(X_test)
-        print("Evaluation metrics for Radial-Basis Support Vector Classifier:")
-        report_svk = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_svk)
-        self.plot_graphs(X_test, y_test, y_pred, svm_kernel)
-
-        # return report_logreg, report_weightlogreg, report_rf,report_lgbm, report_svc, report_svk
-
-    def model_bysubsets(self, retrain=False):
-        
-        analysis = Analysis()
-        combined_df2 = analysis.read_file("./data/combined_dataset2.csv")
-        combined_df3 = analysis.read_file("./data/combined_dataset3.csv")
-        combined_df4 = analysis.read_file("./data/combined_dataset4.csv")
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(combined_df2, 'fs2.sav', retrain=True)
-        filename = './models/models_new/lgbm_dataset2.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 2:")
-        report_subset2 = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_subset2)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(combined_df3, 'fs3.sav', retrain=True)
-        filename = './models/models_new/lgbm_dataset3.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 3:")
-        report_subset3 = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_subset3)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(combined_df4, 'fs4.sav', retrain=True)
-        filename = './models/models_new/lgbm_dataset4.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 4:")
-        report_subset4 = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_subset4)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        # return report_subset2, report_subset3, report_subset4
-
-    def model_tuning(self, data, retrain=False):
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs4.sav', retrain=retrain)
-        filename = './models/models_new/lgbm_dataset4.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_train, y_train)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM without oversampling:")
-        report_subset4 = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_subset4)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs4.sav', retrain=retrain)
-        filename = './models/models_new/lgbm_dataset4_oversampling.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(random_state=123).fit(X_otrain, y_otrain)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 4 with oversampling:")
-        report_oversampling = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_oversampling)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs4.sav', retrain=retrain)
-        filename = './models/models_new/lgbm_dataset4_tuned.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(learning_rate=0.6960720013050441, max_depth= 6, n_estimators= 1181, num_leaves= 69, \
-            subsample= 0.3646666061385309, random_state=123).fit(X_otrain, y_otrain)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 4 with hyperparameter tuning:")
-        report_oversampling_tuned = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_oversampling_tuned)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs4.sav', retrain=retrain)
-        filename = './models/models_new/lgbm_dataset4_tuned_l1regularized.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(reg_alpha=0.001, learning_rate=0.6960720013050441, max_depth= 6, \
-            n_estimators= 1181, num_leaves= 69, subsample= 0.3646666061385309, random_state=123).fit(X_otrain, y_otrain)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 4 with l1 regularization:")
-        report_l1regularized = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_l1regularized)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        X_train, X_test, y_train, y_test, X_otrain, y_otrain = self.data_prep(data, 'fs4.sav', retrain=retrain)
-        filename = './models/models_new/lgbm_dataset4_tuned_l2regularized.sav'
-        if retrain:
-            lgbm_model = LGBMClassifier(reg_lambda=1, learning_rate=0.6960720013050441, max_depth= 6, \
-            n_estimators= 1181, num_leaves= 69, subsample= 0.3646666061385309, random_state=123).fit(X_otrain, y_otrain)
-            pickle.dump(lgbm_model, open(filename, 'wb'))
-        lgbm_model = pickle.load(open(filename, 'rb'))
-        y_pred = lgbm_model.predict(X_test)
-        print("Evaluation metrics for LGBM with dataset 4 with l2 regularization:")
-        report_l2regularized = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose()
-        display(report_l2regularized)
-        self.plot_graphs(X_test, y_test, y_pred, lgbm_model)
-
-        # return report_subset4, report_oversampling_tuned, report_l1regularized, report_l2regularized
-
 
 
 

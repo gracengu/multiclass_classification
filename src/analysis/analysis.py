@@ -1,3 +1,10 @@
+# Import data
+# Initial target and input analysis/ summary - Done
+# Outlier data analysis and removal - Done
+# Missing data analysis and imputation
+# Feature Selection - Done, can improve
+# PCA - Done
+# Statistical analysis
 import os, pickle
 import pandas as pd
 import numpy as np
@@ -21,6 +28,7 @@ from src.config import Config
 import warnings
 warnings.filterwarnings('ignore')
 pd.set_option('display.max_rows', 500)
+
 class Analysis(Config):
 
     def __init__(self):
@@ -494,6 +502,7 @@ class Analysis(Config):
         np.random.seed(Config.ANALYSIS_CONFIG["RANDOM_SEED"])
         for i, col in enumerate(data.loc[:,~data.columns.isin(["target"])].columns[:5]):
             if i < data.shape[1]:
+                print(i)
                 fig, ax = plt.subplots(figsize=(12,8))
                 sns.scatterplot(x="pc{}".format(i+1), 
                     y="pc{}".format(i+2),
@@ -506,6 +515,7 @@ class Analysis(Config):
                     ax=ax
                 )
             display(fig)
+
 
     def anova_feature(self, data):
 

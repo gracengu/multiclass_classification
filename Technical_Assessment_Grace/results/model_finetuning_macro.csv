@@ -1,6 +1,0 @@
-Technique,Phase,Model Name,Averaging Technique,precision,recall,f1-score,support
-Without Oversampling,Model Fine Tuning,LightGBM,macro avg,0.9861647846089502,0.9233333333333335,0.9527748573898679,2457.0
-With Oversampling,Model Fine Tuning,LightGBM,macro avg,0.9617316676902028,0.8466666666666667,0.8969644252199116,2457.0
-With Oversampling with Hyperparameter Tuning,Model Fine Tuning,LightGBM,macro avg,0.9911649269311065,0.8724999999999999,0.9248659607597712,2457.0
-"With Oversampling, Hyperparameter Tuning and L1 Regularization",Model Fine Tuning,LightGBM,macro avg,0.8058488213931276,0.5380555555555555,0.5992470403310138,2457.0
-"With Oversampling, Hyperparameter Tuning and L2 Regularization",Model Fine Tuning,LightGBM,macro avg,0.9851290014333494,0.9108333333333334,0.9454212147492449,2457.0

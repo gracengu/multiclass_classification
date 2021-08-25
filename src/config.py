@@ -2,14 +2,12 @@ import os, inspect
 base_path, current_dir =  os.path.split(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
 class Config(object):
-    '''The following serves to demonstrate the use of a config file to hold all configurations for the model.
-    Due to time constraint, unable to include all parameters/assumptions. 
-    '''
 
     DATA = dict(
         INPUT_PATH          = os.path.join(base_path ,"./data/data.csv"),
         PROCESS_INPUT_PATH  = os.path.join(base_path ,"../data/treated_transformed_data.csv"),
         PCA_INPUT_PATH      = os.path.join(base_path ,'../models/pca_v1.sav')
+
     )
         
     ANALYSIS_CONFIG = dict(
@@ -29,4 +27,12 @@ class Config(object):
         FIGURE_STYLE        = "whitegrid",
         FONT_SIZE           = 20,
     )
+
+    MODELLING_CONFIG = dict(
+        RANDOM_SEED         = 123
         
+    )
+        
+    METRICS_THRESHOLD_PLOT = dict(
+        
+    )

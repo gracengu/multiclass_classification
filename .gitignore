@@ -10,8 +10,9 @@ python3.7*
 example/
 support/
 *.zip
-models/
+*.sav
 data/
+notebooks/
 
 # C extensions
 *.so

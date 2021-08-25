@@ -9,6 +9,7 @@ python3.7*
 # others
 example/
 support/
+*.zip
 
 # C extensions
 *.so

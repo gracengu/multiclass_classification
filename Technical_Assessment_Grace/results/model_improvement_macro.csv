@@ -1,0 +1,5 @@
+Technique,Phase,Model Name,Averaging Technique,Oversampling,precision,recall,f1-score,support
+"No Outlier Removal, Feature Engineering and Transformation",Model Improvement with EDA,LightGBM,macro avg,No,0.9909959758551308,0.8783333333333333,0.9281296998327566,3044.0
+With Outlier Removal,Model Improvement with EDA,LightGBM,macro avg,No,0.9666390755086953,0.8916666666666668,0.9246651318543325,2457.0
+"With Outlier Removal, Feature Engineering and Feature Transformation",Model Improvement with EDA,LightGBM,macro avg,No,0.9990818030050083,0.9091666666666667,0.9480809592790205,2457.0
+"With Outlier Removal, Feature Engineering and Feature Transformation.",Model Improvement with EDA,LightGBM,macro avg,No,0.9861647846089502,0.9233333333333335,0.9527748573898679,2457.0

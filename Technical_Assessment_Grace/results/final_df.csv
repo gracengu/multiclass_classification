@@ -1,0 +1,2 @@
+EDA Technique,Modelling Technique,Model Name,Hyperparameters,Precision,Recall,F1-Score,Support
+"With Outlier Removal, Feature Engineering and Feature Transformation.","With Oversampling, Hyperparameter Tuning and L2 Regularization",LightGBM,"{'reg_lambda': 1, 'learning_rate': 0.6960720013050441, 'max_depth': 6, 'n_estimators': 1181, 'num_leaves': 69, 'subsample': 0.3646666061385309, 'random_state': 123}",0.9851290014333494,0.9108333333333334,0.9454212147492449,2457.0

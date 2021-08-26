@@ -18,36 +18,34 @@ An integral part of having reusable code is having a sensible repository structu
 ```bash
 multiclass_classification
 ├── docs
-│   ├── make.bat
-│   ├── Makefile
-│   └── source
-│       ├── conf.py
-│       └── index.rst
+├── data
+├── models
+│   └── models_new
+├── results
 ├── src
 │   └── analysis
 │       └── __init__.py
-│       └── processing.py
-|       └── feature_engineer.py
-|       └── statistical_analysis.py
+│       └── analysis.py
 |   └── train
 │       └── __init__.py
 │       └── train.py
-|       └── Model.py
 |   └── Config.py
 ├── .gitignore
 ├── README.md
-├── environment.yml
-├── setup.py
-└── tox.ini
+└── requirements.txt
 ```
 
 ## 1. About the Project
 The following is the summary of data scienc/ml/deep learning approaches used in this project:
-  - <b><u>Placeholder</u></b>
-  - <b><u>Placeholder</u></b>
-  - <b><u>Placeholder</u></b>
-  - <b><u>Placeholder</u></b>
-  - <b><u>Placeholder</u></b>
+  - Data import and Pre-EDA 
+  - Data cleaning/ Missing data imputation 
+  - EDA: Outlier analysis 
+  - EDA: Statistical/Distribution analysis </li>
+  - EDA: Feature Engineering and Selection 
+  - Modelling - Baseline Model 
+  - Modelling - Hyperparameter Tuning and Regularization
+  - Modelling - Regularization 
+  - Model Evaluation: Selection of Metrics 
   
 
 ## 2. Getting Started - Clone the repository locally
@@ -105,7 +103,6 @@ pip install .\package\tensorflow_cpu-2.6.0-cp37-cp37m-win_amd64.whl
 pip install -r requirements.txt
 ```
 
-
 ## 4. Open your Jupyter notebook
 
 1. You will have to install a new IPython kernelspec to run the jupyter notebook in an isolated environment.
@@ -119,5 +116,12 @@ You can change the `--name` to anything you want.
 2. In the terminal, execute `jupyter notebook`.
 
 Navigate to the notebooks directory and open notebook:
-  - EDA: `Analysis.ipynb`
-  - Modelling: `Train.ipynb`
+  - Baseline Model: `Baseline Model.ipynb`
+  - Hyperparameter Tuning: `Hyperparameter Tuning.ipynb`
+
+## 4. Final Report
+
+The final report is written in jupyter notebook `Final report.ipynb'. Run the notebook from start
+to end, to generate the html report. 
+    
+

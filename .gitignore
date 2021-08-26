@@ -11,9 +11,6 @@ example/
 support/
 *.zip
 *.sav
-*.csv
-data/
-notebooks/
 
 # C extensions
 *.so

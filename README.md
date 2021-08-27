@@ -6,6 +6,8 @@ There are a total of 150 input variables in the data.
 
 This repo is uploaded in github to demonstrate the use of agile and git throughout the exercise. 
 
+To see the final report: You may download 'Final_Report.html'
+
 ## Table of Contents
 * **1. About the Project**
 * **2. Getting Started**

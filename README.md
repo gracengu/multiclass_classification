@@ -1,6 +1,6 @@
-# Multi-class Classification Problem for Technical Assessment
+# Multi-class Classification 
 
-This repo comprise of the codes developed for technical assessment. The goal of this assessment is to use the 
+This repo comprise of the codes developed for multi-class classification. The goal of this problem is to use the 
 input variables to correctly classify or predict the target variable which is a multiclass categorical variable. 
 There are a total of 150 input variables in the data. 
 
